@@ -1,10 +1,16 @@
 'use strict'
 
-describe('it works', function () {
-	it('yeap', function () {
+var redis = require("redis");
+var client = redis.createClient();
 
-	});
-	it('nope', function () {
-		throw new Error();
-	});
+describe('initial', function() {
+	it('Redis Ready', function(next) {
+		client.on("error", function(err) {
+			next(new Error(err))
+		});
+
+		client.set("string key", "string val", function() {
+			next()
+		});
+	})
 });
