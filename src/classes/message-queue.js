@@ -21,7 +21,7 @@ function MessageQueue(client) {
 
 inherits(MessageQueue, EventEmitter);
 
-MessageQueue.prototype.subscribe = function(event_name, callback) {
+MessageQueue.prototype.act = function(event_name, callback) {
 	var self = this;
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
@@ -37,7 +37,7 @@ MessageQueue.prototype.closeConnection = function() {
 	this.subscriber.end(false);
 };
 
-MessageQueue.prototype.publish = function(event_name, data, callback) {
+MessageQueue.prototype.command = function(event_name, data, callback) {
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
 	var self = this;
