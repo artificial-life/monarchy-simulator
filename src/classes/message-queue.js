@@ -21,21 +21,42 @@ function MessageQueue(client) {
 
 inherits(MessageQueue, EventEmitter);
 
+/*Publishing patterns*/
+MessageQueue.prototype.subscribe = function(event_name, callback) {
+	this.subscriber.subscribe(event_name);
+	this.on(event_name, callback);
+};
+
+MessageQueue.prototype.publish = function(event_name, data) {
+	this.client.publish(event_name, data);
+};
+
+MessageQueue.prototype.request = function(worker, task, data) {
+	var message = {
+		data: data,
+		_task: task,
+		_sender: this.name
+	}
+
+	var request_list = 'requests-' + worker;
+
+	this.command(request_list, JSON.stringify(message));
+};
+
+MessageQueue.prototype.response = function(task, callback) {
+	this.act()
+};
+
 MessageQueue.prototype.act = function(event_name, callback) {
 	var self = this;
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
 	var sink = this._drain.bind(this, list, callback);
 
-	this.subscriber.subscribe(notification);
+	this.subscribe(notification, sink);
 	sink()
-
-	this.on(notification, sink);
 };
 
-MessageQueue.prototype.closeConnection = function() {
-	this.subscriber.end(false);
-};
 
 MessageQueue.prototype.command = function(event_name, data, callback) {
 	var notification = this._notificationName(event_name);
@@ -52,8 +73,11 @@ MessageQueue.prototype.command = function(event_name, data, callback) {
 
 };
 
+MessageQueue.prototype.closeConnection = function() {
+	this.subscriber.end(false);
+};
 
-
+/*Private*/
 MessageQueue.prototype._drain = function(list, callback) {
 
 	var last = true;
@@ -89,8 +113,7 @@ MessageQueue.prototype._notificationName = function(name) {
 	return 'new-' + name;
 };
 
-MessageQueue.prototype._listName = function(name) {
-	return 'list-' + name;
-};
+
+
 
 module.exports = MessageQueue;

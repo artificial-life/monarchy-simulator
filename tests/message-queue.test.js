@@ -36,9 +36,9 @@ describe('MessageQueue', function() {
 			}
 		});
 
-		subscriber.command('subscribe', function() {
+		subscriber.on('subscribe', function() {
 			int = setInterval(function() {
-				mq.publish(event, Math.random());
+				mq.command(event, Math.random());
 			}, 30);
 		});
 
@@ -53,22 +53,67 @@ describe('MessageQueue', function() {
 		async.whilst(function() {
 			return write != 10
 		}, function(cb) {
-			mq.publish(event, write, function() {
+			mq.command(event, write, function() {
 				write++;
 				cb(null, write)
 			})
 		}, function(err, res) {
-			mq.subscribe(event, function(data) {
+			mq.act(event, function(data) {
 				read++;
 				if (10 == read) {
 					next();
 				}
 			});
 		});
+	});
+
+
+	it('can pub\sub', function(next) {
+		var subscriber = new MessageQueue(redis.createClient());
+		var data_to_send = Math.random().toString();
+		subscriber.subscribe('event', (data) => {
+
+			subscriber.closeConnection();
+
+			expect(data).to.be.equal(data_to_send);
+			next();
+		});
+		subscriber.on('subscribe', () => {
+			mq.publish('event', data_to_send);
+		})
+	});
+
+	it('its real pub\sub', function(next) {
+		var subscriber = new MessageQueue(redis.createClient());
+		var subscriber2 = new MessageQueue(redis.createClient());
+		var data_to_send = Math.random().toString();
+		var count = 0;
+		var subscribes = 0;
+
+		function receiver(data) {
+			count++;
+			expect(data).to.be.equal(data_to_send);
+
+			if (count == 2) {
+				next();
+				subscriber.closeConnection();
+				subscriber2.closeConnection();
+			}
+		};
+
+		function starter() {
+			subscribes++;
+			(subscribes == 2) && mq.publish('event', data_to_send);
+		}
+
+		subscriber.on('subscribe', starter)
+		subscriber2.on('subscribe', starter)
+
+		subscriber.subscribe('event', receiver);
+		subscriber2.subscribe('event', receiver);
 
 
 	});
-
 
 	it('test', function() {
 
