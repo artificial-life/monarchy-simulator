@@ -10,7 +10,7 @@ describe('MessageQueue', function() {
 	var mq;
 
 	beforeEach(function() {
-		mq = new MessageQueue(redis.createClient());
+		mq = new MessageQueue(redis.createClient(), 'main');
 	})
 
 	afterEach(function() {
@@ -21,7 +21,7 @@ describe('MessageQueue', function() {
 		expect(mq).to.be.an.instanceof(EventEmitter)
 	});
 
-	it('can command\act messages', function(next) {
+	it('can command/act messages', function(next) {
 		var event = 'random-event-' + Math.random().toString().slice(2, 20);
 		var subscriber = new MessageQueue(redis.createClient());
 		var int = false;
@@ -36,7 +36,10 @@ describe('MessageQueue', function() {
 			}
 		});
 
-		subscriber.on('subscribe', function() {
+		subscriber.on('subscribe', function(channel) {
+
+			if (channel != 'new-' + event) return;
+
 			int = setInterval(function() {
 				mq.command(event, Math.random());
 			}, 30);
@@ -68,7 +71,7 @@ describe('MessageQueue', function() {
 	});
 
 
-	it('can pub\sub', function(next) {
+	it('can pub/sub', function(next) {
 		var subscriber = new MessageQueue(redis.createClient());
 		var data_to_send = Math.random().toString();
 		subscriber.subscribe('event', (data) => {
@@ -78,12 +81,12 @@ describe('MessageQueue', function() {
 			expect(data).to.be.equal(data_to_send);
 			next();
 		});
-		subscriber.on('subscribe', () => {
-			mq.publish('event', data_to_send);
+		subscriber.on('subscribe', (data) => {
+			data == 'event' && mq.publish('event', data_to_send);
 		})
 	});
 
-	it('its real pub\sub', function(next) {
+	it('its real pub/sub', function(next) {
 		var subscriber = new MessageQueue(redis.createClient());
 		var subscriber2 = new MessageQueue(redis.createClient());
 		var data_to_send = Math.random().toString();
@@ -101,7 +104,8 @@ describe('MessageQueue', function() {
 			}
 		};
 
-		function starter() {
+		function starter(ch) {
+			if (ch != 'event') return;
 			subscribes++;
 			(subscribes == 2) && mq.publish('event', data_to_send);
 		}
@@ -115,7 +119,27 @@ describe('MessageQueue', function() {
 
 	});
 
-	it('test', function() {
+	it('request response', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'xxx');
+		var response2 = new MessageQueue(redis.createClient(), 'xxxzzz');
+		var number = 100;
+		var action = function(data) {
+			return data * 2
+		};
+		response.do('task', function(data, reply) {
+			reply(action(data));
+		});
 
+		response2.do('task', function(data, reply) {
+			next(new Error('i should not get it!'))
+		});
+
+		mq.request('xxx://task', 100, function(data) {
+			expect(data).to.be.equal(action(100))
+			next();
+			response.closeConnection();
+			response2.closeConnection();
+		})
 	});
+
 });
