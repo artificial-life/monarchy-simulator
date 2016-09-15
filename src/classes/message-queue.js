@@ -6,14 +6,19 @@ var _ = require('underscore');
 
 var EventEmitter = require('events');
 var inherits = require('util').inherits;
-var POOL_SIZE = 1000000;
+
+/*const section*/
+var POOL_SIZE = 1000000; //@NOTE: this pretty safe in our case
+var MARK_EXPIRATION = 3000; //@NOTE: value in seconds
+
 
 function MessageQueue(client, owner) {
 	this.subscriber = client.duplicate();
 	this.client = client;
 	this.owner = owner;
 
-	//@NOTE: just simple request pool implementation
+	//@NOTE: just simple awaiting request pool implementation
+	//@TODO: implement timeout
 	this.request_pool = [];
 	this.request_counter = 0;
 
@@ -32,7 +37,7 @@ function MessageQueue(client, owner) {
 		var message = JSON.parse(data_string);
 		var id = message.id;
 
-		self._resolveRequest(id, message.data);
+		self._resolveRequest(id, message.err, message.data);
 	})
 }
 
@@ -109,6 +114,7 @@ MessageQueue.prototype.command = function(event_name, data, callback) {
 };
 
 MessageQueue.prototype.closeConnection = function() {
+	this.subscriber.unsubscribe();
 	this.subscriber.end(false);
 };
 
@@ -145,13 +151,18 @@ MessageQueue.prototype._makeReply = function(message) {
 	var response_list = this._responseListName(sender);
 	var self = this;
 
-	return function(data) {
+	return function(err, data) {
 		var response = {
-			data: data,
 			id: message.id,
 			_task: message._task,
 			_sender: self.owner
 		};
+
+		response.err = err ? err : false;
+
+		if (!err) {
+			response.data = data;
+		}
 
 		var data_string = JSON.stringify(response);
 		self.command(response_list, data_string);
@@ -159,29 +170,42 @@ MessageQueue.prototype._makeReply = function(message) {
 };
 
 MessageQueue.prototype._createRequest = function(callback) {
-	this.request_counter = (this.request_counter + 1) % POOL_SIZE;
-	this.request_pool[this.request_counter] = callback;
+	//@NOTE: rotating id
+	var fresh_id = (this.request_counter + 1) % POOL_SIZE;
+	this.request_counter = fresh_id;
 
+	if (this.request_pool[fresh_id] instanceof Function) {
+		//@NOTE: yeap, it's really bad news, should throw big fat error
+		//@NOTE: real request object should provide more infromation
+		throw new Error('Something goes wrong; #' + fresh_id + ' still not fullfiled');
+	}
 
+	this.request_pool[fresh_id] = callback;
 
-	return this.request_counter
+	return fresh_id;
 }
 
-MessageQueue.prototype._resolveRequest = function(id, data) {
+MessageQueue.prototype._resolveRequest = function(id, err, data) {
+	var typed_id = parseInt(id, 10); //@NOTE: not really needed, but i feel much safer now
+	var callback = this.request_pool[typed_id];
 
-	var callback = this.request_pool[parseInt(id, 10)];
-
-	if (callback instanceof Function) callback(data);
+	if (callback instanceof Function) {
+		callback(err, data);
+		this.request_pool[typed_id] = null;
+	}
 }
 
 MessageQueue.prototype._listName = function(name) {
 	return 'list-' + name;
 };
 
+
+//@NOTE: not necessary, but good for testing
 MessageQueue.prototype._updateMark = function(event_name, callback) {
 	var now = Date.now();
 	var mark_name = 'mark-' + event_name;
-	this.client.set(mark_name, now, callback)
+	this.client.set(mark_name, now, callback);
+	this.client.expire(mark_name, MARK_EXPIRATION);
 };
 
 MessageQueue.prototype._notificationName = function(name) {

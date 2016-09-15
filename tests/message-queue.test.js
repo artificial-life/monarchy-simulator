@@ -119,23 +119,55 @@ describe('MessageQueue', function() {
 
 	});
 
-	it('request response', function(next) {
+	it('request response success', function(next) {
 		var response = new MessageQueue(redis.createClient(), 'xxx');
-		var response2 = new MessageQueue(redis.createClient(), 'xxxzzz');
 		var number = 100;
+
 		var action = function(data) {
 			return data * 2
 		};
+
 		response.do('task', function(data, reply) {
-			reply(action(data));
+			reply(null, action(data));
+		});
+
+		mq.request('xxx://task', number, function(err, res) {
+			expect(res).to.be.equal(action(number))
+			next();
+			response.closeConnection();
+		})
+	});
+
+	it('request response can fail', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'zzz');
+		var error = 'because i can';
+		response.do('task', function(data, reply) {
+			reply(error);
+		});
+
+		mq.request('zzz://task', 'why?', function(err, res) {
+			expect(err).to.be.equal(error);
+			expect(res).to.be.equal(undefined);
+			next();
+			response.closeConnection();
+		})
+	});
+
+	it('request response targeted', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'xxx');
+		var response2 = new MessageQueue(redis.createClient(), 'xxx-zzz');
+		var number = 100;
+
+		response.do('task', function(data, reply) {
+			reply(null, data);
 		});
 
 		response2.do('task', function(data, reply) {
 			next(new Error('i should not get it!'))
 		});
 
-		mq.request('xxx://task', 100, function(data) {
-			expect(data).to.be.equal(action(100))
+		mq.request('xxx://task', number, function(err, res) {
+			expect(res).to.be.equal(number);
 			next();
 			response.closeConnection();
 			response2.closeConnection();
