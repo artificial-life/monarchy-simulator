@@ -7,7 +7,7 @@ var Puppet = require('./puppet.js');
 //@NOTE: implements family relationships
 
 function FamilyGuy(name, client) {
-	this.name = name;
+	FamilyGuy.super_.prototype.constructor.call(this, name, client);
 }
 
 inherits(FamilyGuy, Puppet);

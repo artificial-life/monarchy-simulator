@@ -91,7 +91,7 @@ MessageQueue.prototype.act = function(event_name, callback) {
 	var self = this;
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
-	var sink = this._drain.bind(this, list, callback);
+	var sink = this.drain.bind(this, list, callback);
 
 	this.subscribe(notification, sink);
 	sink()
@@ -102,7 +102,7 @@ MessageQueue.prototype.command = function(event_name, data, callback) {
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
 	var self = this;
-	var pushToList = this.client.lpush.bind(this.client, list, data);
+	var pushToList = this.client.rpush.bind(this.client, list, data);
 	var updateMark = this._updateMark.bind(this, event_name);
 
 	async.series([pushToList, updateMark],
@@ -118,9 +118,7 @@ MessageQueue.prototype.closeConnection = function() {
 	this.subscriber.end(false);
 };
 
-/*Private*/
-
-MessageQueue.prototype._drain = function(list, callback) {
+MessageQueue.prototype.drain = function(list, callback, drainend) {
 
 	var last = true;
 	var self = this;
@@ -136,9 +134,15 @@ MessageQueue.prototype._drain = function(list, callback) {
 			last = res;
 			check(err, res)
 		});
+	}, function(err, res) {
+		if (drainend instanceof Function) drainend(err, res)
 	});
 
 };
+
+/*Private*/
+
+
 
 MessageQueue.prototype.checkMark = function(event_name, callback) {
 	var mark_name = 'mark-' + event_name;
@@ -213,7 +217,7 @@ MessageQueue.prototype._notificationName = function(name) {
 };
 
 MessageQueue.prototype._requestListName = function(task_name, worker) {
-	let who = worker || this.owner;
+	var who = worker || this.owner;
 	return ['request-list', who, task_name].join('-');
 };
 

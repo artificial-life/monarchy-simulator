@@ -48,6 +48,31 @@ describe('MessageQueue', function() {
 	});
 
 
+	it(' drain only', function(next) {
+		var event = 'drain-list';
+		var read = 0;
+		var write = 0;
+		var push_count = 100;
+
+		async.whilst(function() {
+			return write != push_count
+		}, function(cb) {
+
+			mq.client.rpush(event, write, function() {
+				write++;
+				cb(null, write)
+			})
+		}, function(err, res) {
+
+			mq.drain(event, function(data) {
+				read++;
+			}, function() {
+				if (push_count == read) next();
+			});
+
+		});
+	});
+
 	it('can drain all messages', function(next) {
 		var event = 'drain-event';
 		var read = 0;
@@ -63,6 +88,7 @@ describe('MessageQueue', function() {
 		}, function(err, res) {
 			mq.act(event, function(data) {
 				read++;
+
 				if (10 == read) {
 					next();
 				}
