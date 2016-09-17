@@ -140,14 +140,39 @@ MessageQueue.prototype.drain = function(list, callback, drainend) {
 
 };
 
+MessageQueue.prototype.checkMark = function(event_name, isdiff, callback) {
+	var mark_name = 'mark-' + event_name;
+	if (!isdiff) {
+		//@NOTE: just get it
+		this.client.get(mark_name, callback);
+		return;
+	}
+
+	var self = this;
+
+	async.parallel({
+		current: function(cb) {
+			self.client.time(cb)
+		},
+		mark: function(cb) {
+			self.client.get(mark_name, cb)
+		}
+	}, function(err, results) {
+		if (err) {
+			callback(err, null)
+			return;
+		}
+
+		var current = results.current;
+		var now = current[0] * 1000 + (current[1] / 1000 | 0);
+		var diff = now - results.mark;
+
+		callback(null, diff);
+	});
+};
+
 /*Private*/
 
-
-
-MessageQueue.prototype.checkMark = function(event_name, callback) {
-	var mark_name = 'mark-' + event_name;
-	this.client.get(mark_name, callback);
-};
 
 MessageQueue.prototype._makeReply = function(message) {
 	var sender = message._sender;
@@ -206,10 +231,23 @@ MessageQueue.prototype._listName = function(name) {
 
 //@NOTE: not necessary, but good for testing
 MessageQueue.prototype._updateMark = function(event_name, callback) {
-	var now = Date.now();
+
 	var mark_name = 'mark-' + event_name;
-	this.client.set(mark_name, now, callback);
-	this.client.expire(mark_name, MARK_EXPIRATION);
+	var self = this;
+
+	async.waterfall([
+		function(cb) {
+			self.client.time(cb);
+		},
+		function(time, cb) {
+			var now = time[0] * 1000 + (time[1] / 1000 | 0);
+			self.client.set(mark_name, now, cb);
+		},
+		function(state, cb) {
+			self.client.expire(mark_name, MARK_EXPIRATION, cb);
+		}
+	], callback);
+
 };
 
 MessageQueue.prototype._notificationName = function(name) {

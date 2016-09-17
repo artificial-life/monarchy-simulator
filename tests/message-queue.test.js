@@ -200,4 +200,11 @@ describe('MessageQueue', function() {
 		})
 	});
 
+	it('mark diff', function(next) {
+		//@TODO: should rework it synthetic test
+		mq.checkMark('drain-event', true, function(err, res) {
+			expect(res).to.be.below(1000);
+			next();
+		});
+	})
 });
