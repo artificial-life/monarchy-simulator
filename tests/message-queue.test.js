@@ -8,9 +8,9 @@ var MessageQueue = require('../src/classes/message-queue.js');
 
 describe('MessageQueue', function() {
 	var mq;
-
+	var client = redis.createClient();
 	beforeEach(function() {
-		mq = new MessageQueue(redis.createClient(), 'main');
+		mq = new MessageQueue(client, 'main');
 	})
 
 	afterEach(function() {
@@ -201,10 +201,15 @@ describe('MessageQueue', function() {
 	});
 
 	it('mark diff', function(next) {
-		//@TODO: should rework it synthetic test
+		//@TODO: should rework this synthetic test
 		mq.checkMark('drain-event', true, function(err, res) {
 			expect(res).to.be.below(1000);
 			next();
 		});
 	})
+
+
+	after(function() {
+		client.end(false);
+	});
 });

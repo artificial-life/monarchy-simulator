@@ -13,4 +13,8 @@ describe('initial', function() {
 			next()
 		});
 	})
+
+	after(function() {
+		client.end(false);
+	})
 });

@@ -6,8 +6,10 @@ var MessageQueue = require('../src/classes/message-queue.js');
 
 describe('Service', function() {
 	var service;
+	var client = redis.createClient();
+
 	beforeEach(function() {
-		service = new Service('me', redis.createClient());
+		service = new Service('me', client);
 	});
 
 	it('creates message queue', function() {
@@ -17,4 +19,8 @@ describe('Service', function() {
 	it('test', function() {
 
 	})
+
+	after(function() {
+		client.end(false);
+	});
 })
