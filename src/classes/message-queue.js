@@ -10,7 +10,7 @@ var inherits = require('util').inherits;
 /*const section*/
 var POOL_SIZE = 1000000; //@NOTE: this pretty safe in our case
 var MARK_EXPIRATION = 3000; //@NOTE: value in seconds
-
+var DEFAULT_TIMEOUT = 1500; //@NOTE: in msec
 
 function MessageQueue(client, owner) {
 	this.subscriber = client.duplicate();
@@ -20,6 +20,7 @@ function MessageQueue(client, owner) {
 	//@NOTE: just simple awaiting request pool implementation
 	//@TODO: implement timeout
 	this.request_pool = [];
+	this.timeout_pool = [];
 	this.request_counter = 0;
 
 	var self = this;
@@ -49,16 +50,21 @@ MessageQueue.prototype.subscribe = function(event_name, callback) {
 	this.on(event_name, callback);
 };
 
+MessageQueue.prototype.unsubscribe = function(event_name, callback) {
+	this.subscriber.unsubscribe(event_name);
+	this.removeAllListeners(event_name);
+};
+
 MessageQueue.prototype.publish = function(event_name, data) {
 	this.client.publish(event_name, data);
 };
 
-MessageQueue.prototype.request = function(path, data, callback) {
+MessageQueue.prototype.request = function(path, data, callback, timeout) {
 	var part = path.split('://');
 	var worker = part[0];
 	var task = part[1];
 
-	var counter = this._createRequest(callback);
+	var counter = this._createRequest(callback, timeout);
 
 	var message = {
 		data: data,
@@ -66,8 +72,8 @@ MessageQueue.prototype.request = function(path, data, callback) {
 		_sender: this.owner,
 		id: counter
 	};
-
 	var request_list = this._requestListName(task, worker);
+
 	this.command(request_list, JSON.stringify(message));
 };
 
@@ -85,18 +91,19 @@ MessageQueue.prototype.do = function(task_name, callback) {
 	});
 };
 
-
-
 MessageQueue.prototype.act = function(event_name, callback) {
-	var self = this;
 	var notification = this._notificationName(event_name);
 	var list = this._listName(event_name);
 	var sink = this.drain.bind(this, list, callback);
 
 	this.subscribe(notification, sink);
-	sink()
+	sink();
 };
 
+MessageQueue.prototype.unact = function(event_name) {
+	var notification = this._notificationName(event_name);
+	this.unsubscribe(notification);
+};
 
 MessageQueue.prototype.command = function(event_name, data, callback) {
 	var notification = this._notificationName(event_name);
@@ -113,13 +120,14 @@ MessageQueue.prototype.command = function(event_name, data, callback) {
 
 };
 
+
+
 MessageQueue.prototype.closeConnection = function() {
 	this.subscriber.unsubscribe();
 	this.subscriber.end(false);
 };
 
 MessageQueue.prototype.drain = function(list, callback, drainend) {
-
 	var last = true;
 	var self = this;
 
@@ -173,7 +181,6 @@ MessageQueue.prototype.checkMark = function(event_name, isdiff, callback) {
 
 /*Private*/
 
-
 MessageQueue.prototype._makeReply = function(message) {
 	var sender = message._sender;
 
@@ -198,18 +205,30 @@ MessageQueue.prototype._makeReply = function(message) {
 	}
 };
 
-MessageQueue.prototype._createRequest = function(callback) {
+MessageQueue.prototype._createRequest = function(callback, timeout) {
+	var self = this;
 	//@NOTE: rotating id
 	var fresh_id = (this.request_counter + 1) % POOL_SIZE;
 	this.request_counter = fresh_id;
+	timeout = _.isNumber(timeout) ? timeout : DEFAULT_TIMEOUT;
 
 	if (this.request_pool[fresh_id] instanceof Function) {
 		//@NOTE: yeap, it's really bad news, should throw big fat error
 		//@NOTE: real request object should provide more infromation
+		//@NOTE: so, don't use timeout == 0 without strong reason
 		throw new Error('Something goes wrong; #' + fresh_id + ' still not fullfiled');
 	}
 
+	if (timeout) {
+
+		var timeout_id = setTimeout(function() {
+			self._resolveRequest(fresh_id, 'timeout', null);
+		}, timeout);
+		this.timeout_pool[fresh_id] = timeout_id;
+	}
+
 	this.request_pool[fresh_id] = callback;
+
 
 	return fresh_id;
 }
@@ -217,6 +236,9 @@ MessageQueue.prototype._createRequest = function(callback) {
 MessageQueue.prototype._resolveRequest = function(id, err, data) {
 	var typed_id = parseInt(id, 10); //@NOTE: not really needed, but i feel much safer now
 	var callback = this.request_pool[typed_id];
+	var timeout_id = this.timeout_pool[typed_id];
+
+	timeout_id && clearTimeout(timeout_id);
 
 	if (callback instanceof Function) {
 		callback(err, data);

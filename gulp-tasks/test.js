@@ -1,23 +1,18 @@
 'use strict'
 
-global.expect = require('chai').expect;
+var dirs = ['src/', 'tests/'];
 
-var gulp = require('gulp');
-var mocha = require('gulp-mocha');
-var plumber = require('gulp-plumber');
-
-var files = ['tests/**/*.js', 'src/**/*.js'];
-
-var test = function() {
-	console.log('======================START TEST SESSION==============================');
-	gulp.src('tests/**/*.test.js', {
-			read: false
-		})
-		.pipe(plumber())
-		.pipe(mocha());
-};
+var nodemon = require('gulp-nodemon');
+var demon;
 
 module.exports = function() {
-	test();
-	gulp.watch(files, test);
+	//@NOTE: clean env every start, hanging intervals are painful
+	demon = nodemon({
+		script: 'tests/run.js',
+		watch: dirs,
+		execMap: {},
+		env: {
+			'NODE_ENV': 'development'
+		}
+	});
 }

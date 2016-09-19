@@ -39,7 +39,6 @@ describe('Pedigree', function() {
 				pedigree.getRelative(function(err, res) {
 					expect(res).to.be.have.property('name', 'me');
 					cb(err);
-
 				});
 
 			});
@@ -59,6 +58,15 @@ describe('Pedigree', function() {
 			});
 		});
 
+	});
+
+	it('exclude', function(cb) {
+		pedigree.add('me', function(err, res) {
+			pedigree.exclude(res, function(err, res) {
+				expect(res).to.be.equal(1); //@TODO: must do better checks here
+				cb();
+			})
+		});
 	});
 
 	after(function() {

@@ -206,6 +206,48 @@ describe('MessageQueue', function() {
 			expect(res).to.be.below(1000);
 			next();
 		});
+	});
+
+	it('timeout default', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'timeouter');
+		response.do('timeout', function(data, reply) {
+			setTimeout(function() {
+				reply(null, 'good but late');
+			}, 2000)
+		});
+
+		mq.request('timeouter://timeout', 'why?', function(err, res) {
+			expect(err).to.be.equal('timeout');
+			next();
+			response.closeConnection();
+		})
+	})
+
+	it('timeout set', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'timeouter');
+		response.do('timeout', function(data, reply) {
+			setTimeout(function() {
+				reply(null, 'good but late');
+			}, 200)
+		});
+
+		mq.request('timeouter://timeout', 'why?', function(err, res) {
+			expect(err).to.be.equal('timeout');
+			next();
+			response.closeConnection();
+		}, 100)
+	})
+
+	it('unact', function(next) {
+		var response = new MessageQueue(redis.createClient(), 'unacter');
+		response.act('action', function(data, reply) {
+			setTimeout(function() {
+				reply(null, 'good but late');
+			}, 200)
+		});
+
+		response.unact('action');
+		next();
 	})
 
 
