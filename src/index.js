@@ -17,25 +17,25 @@ var drain_errors = !!~args._.indexOf('getErrors');
 var crowned = !!~args._.indexOf('crowned');
 
 
-var human = new Royalty(name, client, function () {
+var human = new Royalty(name, client, function() {
 	console.log('%s was born in %d', name, Date.now());
 
 	if (drain_errors) {
 
-		async.waterfall([function (cb) {
+		async.waterfall([function(cb) {
 				human.drainErrors(cb);
 			},
-			function (count, cb) {
+			function(count, cb) {
 				console.log('%s. Job is done. %s errors grabbed ', name, count);
 				human.die(cb);
 			}
-		], function (err, cb) {
+		], function(err, cb) {
 			console.log('Goodbye Cruel World');
 		});
 	}
 
 	if (crowned) {
-		human.beKing(function (err, res) {
+		human.beKing(function(err, res) {
 			if (!err) console.log("%s. I'm The King now", name);
 		})
 	}
@@ -54,8 +54,7 @@ human.onCommand(function eventHandler(msg, callback) {
 });
 
 human.orderTemplate(function getMessage() {
-this.cnt = this.cnt || 0;
+	this.cnt = this.cnt || 0;
 
-return this.cnt++;
+	return this.cnt++;
 });
-);
