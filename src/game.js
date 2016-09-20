@@ -96,8 +96,8 @@ var routs = {
 				action: 'drain-errors'
 			},
 			function(err, res) {
-				console.log('%s: %d piles of errors removed', character.name, res);
-			})
+				if (!err) console.log('%s: %d piles of errors removed', character.name, res);
+			}, 30000)
 	},
 	kill: function(id) {
 		var character = characters[id - 1];
