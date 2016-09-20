@@ -1,4 +1,5 @@
-'use strict'
+"use strict";
+
 var inherits = require('util').inherits;
 var async = require('async');
 
@@ -33,7 +34,7 @@ Royalty.prototype.reportRelativeStatus = function(err, res) {
 
 	async.waterfall([
 		function(cb) {
-			self.correctPedigree(res, cb)
+			self.correctPedigree(res, cb);
 		},
 		function(count, cb) {
 			var throne = self._throne();
@@ -46,7 +47,7 @@ Royalty.prototype.reportRelativeStatus = function(err, res) {
 		if (!was_king) return;
 
 		self.beKing();
-	})
+	});
 };
 
 Royalty.prototype.errorHandler = function(error, msg) {
@@ -57,11 +58,11 @@ Royalty.prototype.errorHandler = function(error, msg) {
 Royalty.prototype.drainErrors = function(drained) {
 	var count = 0;
 	this.queue.drain(ERROR_LIST, function() {
-		count++
+		count++;
 	}, function(err, res) {
 		// console.log('%d total errors drained', count);
 		drained(err, count);
-	})
+	});
 };
 
 

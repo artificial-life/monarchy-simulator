@@ -1,5 +1,4 @@
-'use stric'
-
+"use stric";
 
 module.exports = function canAct(hero) {
 	if (!hero) {
@@ -23,10 +22,10 @@ module.exports = function canAct(hero) {
 				process.stdout.clearLine();
 				console.log('go ahead...');
 			}
-		}, 500)
+		}, 500);
 
 		return false;
 	}
 
 	return true;
-}
+};

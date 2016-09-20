@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var async = require('async');
 var _ = require('underscore');
@@ -69,7 +69,7 @@ Pedigree.prototype.getLast = function(callback) {
 	var args = [this.family, '+inf', 0, 'WITHSCORES', 'LIMIT', 0, 1];
 
 	this.client.zrevrangebyscore(args, function(err, response) {
-		let data = self._parseRelative(response);
+		var data = self._parseRelative(response);
 		callback(err, data.name == self.name ? null : data);
 	});
 };

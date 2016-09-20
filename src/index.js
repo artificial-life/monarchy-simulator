@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var _ = require('underscore');
 var minimist = require('minimist');
@@ -38,7 +38,7 @@ var human = new Royalty(name, client, function() {
 	if (crowned) {
 		human.beKing(function(err, res) {
 			if (!err) console.log("%s. I'm The King now", name);
-		})
+		});
 		return;
 	}
 
@@ -50,7 +50,7 @@ human.onCommand(function eventHandler(msg, callback) {
 	function onComplete() {
 		var error = Math.random() > 0.85;
 		callback(error, msg);
-	};
+	}
 
 	// processing takes time...
 

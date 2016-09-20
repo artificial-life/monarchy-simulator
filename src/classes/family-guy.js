@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var inherits = require('util').inherits;
 var async = require('async');
@@ -23,7 +23,7 @@ function FamilyGuy(name, family, client, ready) {
 		self.visitRelative(function(err, res) {
 
 			if (err == ALONE) return;
-			_.isFunction(self.reportRelativeStatus) && self.reportRelativeStatus(err, res);
+			if (_.isFunction(self.reportRelativeStatus)) self.reportRelativeStatus(err, res);
 		});
 	}, VISIT_INTERVAL);
 }
@@ -90,7 +90,7 @@ FamilyGuy.prototype._getPassport = function() {
 	return {
 		name: this.name,
 		index: this.pedigree.birth
-	}
+	};
 };
 
 FamilyGuy.prototype._addToPedigree = function(ready) {
@@ -99,10 +99,10 @@ FamilyGuy.prototype._addToPedigree = function(ready) {
 	this.pedigree.add(this.name, function() {
 
 		self.queue.do(VISIT_TASK_NAME, function(data, reply) {
-			reply(null, self._getPassport())
+			reply(null, self._getPassport());
 		});
 
-		_.isFunction(ready) && ready();
+		if (_.isFunction(ready)) ready();
 	});
 };
 
@@ -112,7 +112,7 @@ FamilyGuy.prototype.correctPedigree = function(passport, callback) {
 };
 
 FamilyGuy.prototype.destroy = function() {
-	this.visit && clearInterval(this.visit);
+	(!!this.visit) && clearInterval(this.visit);
 	FamilyGuy.super_.prototype.destroy.call(this);
 };
 

@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var _ = require('underscore');
 var os = require("os");
@@ -6,8 +6,8 @@ var os = require("os");
 var domain = os.hostname();
 domain = domain[0].toUpperCase() + domain.slice(1);
 
-var nicknames = require('./nicknames.json');
-var names = require('./names.json');
+var nicknames = require('./data/nicknames.json');
+var names = require('./data/names.json');
 var nicknames_indexes = _.range(nicknames.length);
 
 var excluded = [];
@@ -33,7 +33,7 @@ function makeName() {
 	var nickname = nicknames[nickname_index];
 
 	var full_name = nickname.replace('~', name);
-	return full_name + ' of ' + domain
+	return full_name + ' of ' + domain;
 }
 
 module.exports = makeName;

@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var MessageQueue = require('./message-queue.js');
 
@@ -36,10 +36,11 @@ function Puppet(name, client) {
 }
 
 Puppet.prototype.die = function(callback) {
-	callback(null, 500);
+	var time = Math.floor(Math.random() * 500);
+	callback(null, time);
 	setTimeout(function() {
 		process.exit();
-	}, 500)
+	}, time);
 };
 
 
