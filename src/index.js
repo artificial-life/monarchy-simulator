@@ -13,8 +13,8 @@ if (!name) throw new Error('choose name');
 
 var client = redis.createClient();
 
-var human = new Royalty(name, client, function () {
-	console.log('%s ready', name);
+var human = new Royalty(name, client, function() {
+	console.log('%s was born in %d', name, Date.now());
 });
 
 
@@ -27,10 +27,10 @@ human.onCommand(function eventHandler(msg, callback) {
 	// processing takes time...
 
 	setTimeout(onComplete, Math.floor(Math.random() * 1000));
-
 });
 
 human.orderTemplate(function getMessage() {
 	this.cnt = this.cnt || 0;
+	((this.cnt % 100000) == 0) && console.log(this.cnt);
 	return this.cnt++;
 });

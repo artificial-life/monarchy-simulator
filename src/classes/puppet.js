@@ -21,7 +21,7 @@ function Puppet(name, client) {
 	this.queue = new MessageQueue(client, name);
 	var self = this;
 
-	this.queue.do('puppet-action', function (data, reply) {
+	this.queue.do('puppet-action', function(data, reply) {
 		var action_name = cammelCase(data.action);
 		var method = self[action_name];
 
@@ -35,15 +35,15 @@ function Puppet(name, client) {
 	});
 }
 
-Puppet.prototype.die = function (callback) {
+Puppet.prototype.die = function(callback) {
 	callback(null, 500);
-	setTimeout(function () {
+	setTimeout(function() {
 		process.exit();
 	}, 500)
 };
 
 
-Puppet.prototype.destroy = function () {
+Puppet.prototype.destroy = function() {
 	this.queue.closeConnection();
 	this.queue.unsubscribe();
 };

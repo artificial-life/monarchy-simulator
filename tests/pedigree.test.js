@@ -62,7 +62,12 @@ describe('Pedigree', function() {
 
 	it('exclude', function(cb) {
 		pedigree.add('me', function(err, res) {
-			pedigree.exclude(res, function(err, res) {
+			var passport = {
+				index: res,
+				name: 'me'
+			};
+
+			pedigree.exclude(passport, function(err, res) {
 				expect(res).to.be.equal(1); //@TODO: must do better checks here
 				cb();
 			})
