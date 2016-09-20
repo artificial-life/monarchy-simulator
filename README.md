@@ -52,6 +52,8 @@ node ./src/index.js --name UNIQUE_ID getErrors crowned
 
 *getErrors* and *crowned* are optional params
 
+You should first spawn "crowned" process, to avoid collisions with the dead kings of previous runs. Or you could delete list 'royal-family` from redis, and run the workers in any sequence
+
 
 #### Tests (not so much)
 
