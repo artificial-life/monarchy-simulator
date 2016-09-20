@@ -15,7 +15,6 @@ var FAMILY_NAME = 'royal-family';
 function Royalty(name, client, ready) {
 	Royalty.super_.prototype.constructor.call(this, name, FAMILY_NAME, client, ready);
 	this.orders_int = false;
-	this.beHeir();
 }
 
 inherits(Royalty, FamilyGuy);

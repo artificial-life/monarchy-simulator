@@ -21,7 +21,6 @@ var human = new Royalty(name, client, function() {
 	console.log('%s was born in %d', name, Date.now());
 
 	if (drain_errors) {
-
 		async.waterfall([function(cb) {
 				human.drainErrors(cb);
 			},
@@ -32,13 +31,18 @@ var human = new Royalty(name, client, function() {
 		], function(err, cb) {
 			console.log('Goodbye Cruel World');
 		});
+
+		return;
 	}
 
 	if (crowned) {
 		human.beKing(function(err, res) {
 			if (!err) console.log("%s. I'm The King now", name);
 		})
+		return;
 	}
+
+	human.beHeir();
 });
 
 
