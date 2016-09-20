@@ -37,6 +37,11 @@
   punish 2
   ````
 
+* massacre id1 id2 idN - mass kill command
+  ````
+  massacre 1 2 19
+  ````
+
 * cleaner - spawn process with "getErrors" attribute
   ````
   cleaner
