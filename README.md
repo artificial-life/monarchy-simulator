@@ -26,15 +26,31 @@
   ````
   kill 1
   ````
+
 * crown id - crown character by id from list
   ````
   crown 2
   ````
+
 * punish id - drain error log
   ````
   punish 2
   ````
+
+* cleaner - spawn process with "getErrors" attribute
+  ````
+  cleaner
+  ````
+
 * help - helps
+
+#### Running manually
+
+````
+node ./src/index.js --name UNIQUE_ID getErrors crowned
+````
+
+*getErrors* and *crowned* are optional params
 
 
 #### Tests (not so much)

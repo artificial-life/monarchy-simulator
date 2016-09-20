@@ -12,9 +12,24 @@ var name = args.name;
 if (!name) throw new Error('choose name');
 
 var client = redis.createClient();
+var drain_errors = !!~args._.indexOf('getErrors');
+var crowned = !!~args._.indexOf('crowned');
+
 
 var human = new Royalty(name, client, function() {
 	console.log('%s was born in %d', name, Date.now());
+
+	if (drain_errors) {
+		human.drainErrors(function(err, res) {
+			if (!err) console.log('%s. Job is done. %s errors grabbed ', name, res);
+		});
+	}
+
+	if (crowned) {
+		human.beKing(function(err, res) {
+			if (!err) console.log("%s. I'm The King now", name);
+		})
+	}
 });
 
 
@@ -31,6 +46,6 @@ human.onCommand(function eventHandler(msg, callback) {
 
 human.orderTemplate(function getMessage() {
 	this.cnt = this.cnt || 0;
-	((this.cnt % 100000) == 0) && console.log(this.cnt);
+
 	return this.cnt++;
 });

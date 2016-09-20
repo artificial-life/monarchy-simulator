@@ -115,6 +115,14 @@ var routs = {
 				console.log('%s going to die', character.name);
 			})
 	},
+	cleaner: function() {
+		var name = makeName();
+		characters.push({
+			name: name,
+			status: 'wandering'
+		});
+		child_process.fork('./src/index.js', ['--name', name, 'getErrors']);
+	},
 	help: function() {
 		console.log('Commands:');
 		console.log('1) rise num - spawns characters');
@@ -122,7 +130,8 @@ var routs = {
 		console.log('3) kill id - kill character by id from list');
 		console.log('4) crown id - crown character by id from list');
 		console.log('5) punish id - clear error log');
-		console.log('6) help - helps');
+		console.log('6) cleaner - spawn cleaner');
+		console.log('7) help - helps');
 	}
 };
 

@@ -8,7 +8,7 @@ var MessageQueue = require('./message-queue.js');
 
 var ERROR_LIST = 'failed-orders';
 var ORDERS = 'royal-orders';
-var PUBLISH_INTERVAL = 100;
+var PUBLISH_INTERVAL = 500;
 var FAMILY_NAME = 'royal-family';
 //@NOTE: figths for the crown
 
@@ -99,4 +99,5 @@ Royalty.prototype.beHeir = function() {
 Royalty.prototype._throne = function() {
 	return FAMILY_NAME + '-king';
 };
+
 module.exports = Royalty;

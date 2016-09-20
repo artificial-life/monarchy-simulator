@@ -1,37 +1,38 @@
 {
-    "name": "monarchy-simulator",
-    "version": "1.0.0",
-    "description": "the fastest will rule them all",
-    "main": "src/index.js",
-    "scripts": {
-        "test": "gulp test",
-        "start": "node ./src/game.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/artificial-life/monarchy-simulator.git"
-    },
-    "keywords": [
-        "redis",
-        "microservice",
-        "ring coordination"
-    ],
-    "author": "",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/artificial-life/monarchy-simulator/issues"
-    },
-    "homepage": "https://github.com/artificial-life/monarchy-simulator#readme",
-    "dependencies": {
-        "async": "^2.0.1",
-        "minimist": "^1.2.0",
-        "redis": "^2.6.2"
-    },
-    "devDependencies": {
-        "chai": "^3.5.0",
-        "gulp": "^3.9.1",
-        "gulp-mocha": "^3.0.1",
-        "gulp-nodemon": "^2.1.0",
-        "gulp-plumber": "^1.1.0"
-    }
+  "name": "monarchy-simulator",
+  "version": "1.0.0",
+  "description": "the fastest will rule them all",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "gulp test",
+    "start": "node ./src/game.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artificial-life/monarchy-simulator.git"
+  },
+  "keywords": [
+    "redis",
+    "microservice",
+    "ring coordination"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/artificial-life/monarchy-simulator/issues"
+  },
+  "homepage": "https://github.com/artificial-life/monarchy-simulator#readme",
+  "dependencies": {
+    "async": "^2.0.1",
+    "minimist": "^1.2.0",
+    "redis": "^2.6.2",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-mocha": "^3.0.1",
+    "gulp-nodemon": "^2.1.0",
+    "gulp-plumber": "^1.1.0"
+  }
 }
