@@ -144,6 +144,6 @@ rl.on('line', function(command_str) {
 	if (method instanceof Function) {
 		method(value)
 	} else {
-		console.log('bad command');
+		console.log('bad command; type help for a list of commands');
 	}
 });
