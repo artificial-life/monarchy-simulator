@@ -1,3 +1,7 @@
+### Note
+
+* es5 restricted by condition
+
 ### How to
 
 ````
